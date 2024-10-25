@@ -1,30 +1,19 @@
-import { HandCard, State } from '../types/game-state'
 import Card from './card'
-import Hand from './hand'
-import PlayerDeck from './player-deck'
 
-export default class Player {
+export interface Player {
 	turnActions: number
 	turnBuys: number
-	buyPotentia:number
+	buyPotentia: number
 
-	deck: PlayerDeck
-	hand: Hand
-	constructor() {
-		this.turnActions = 0
-		this.turnBuys = 0
-		this.deck = new PlayerDeck()
-		this.hand = this.deck.hand
-	}
+	allCards: Card[]
 
-	onTurn(state: State) {
-		const {PlayerState} = state
-		this.turnActions = PlayerState.ActionsCount
-		this.turnBuys = PlayerState.BuyCount
-		this.buyPotentia = PlayerState.AdditionalMoney
-		
-		// this.hand = PlayerState.Hand.map((card:HandCard):any=>{
-		// 	return undefined
-		// })
-	}
+	deck: Card[]
+
+	discard: Card[]
+	hand: Card[]
+}
+
+export interface PlayerEnemy {
+	publicDiscard: Card[]
+	allCards: Card[]
 }

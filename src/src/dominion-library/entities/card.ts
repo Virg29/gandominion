@@ -1,10 +1,6 @@
-export default abstract class Card {
+export default interface Card {
 	card: CardEnum
-	cardType: CardType
-	buyCost: number
-	playCost: number
-	canPlay: () => boolean
-	play: () => void
+	name: string
 }
 
 export enum CardEnum {
@@ -20,10 +16,10 @@ export enum CardEnum {
 	Bureaucrat = 9,
 	Cellar = 10,
 	Chapel = 11,
-	CounsilRoom = 12,
+	Counsil_Room = 12,
 	Festival = 13,
 	Gardens = 14,
-	Harbringer = 15,
+	Harbinger = 15,
 	Laboratory = 16,
 	Library = 17,
 	Market = 18,
@@ -36,16 +32,9 @@ export enum CardEnum {
 	Remodel = 25,
 	Sentry = 26,
 	Smithy = 27,
-	ThroneRoom = 28,
+	Throne_Room = 28,
 	Vassal = 29,
 	Village = 30,
 	Witch = 31,
 	Workshop = 32,
-}
-
-export enum CardType {
-	Action = 0,
-	Duration = 1,
-	Treasury = 2,
-	Victory = 3,
 }

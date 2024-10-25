@@ -11,13 +11,21 @@ import img from '../../assets/img/bg.jpg'
 import Piles from './piles'
 import { Rect } from 'konva/lib/shapes/Rect'
 import Hand from './hand'
+import GameManager from './game-manager'
+import { PlayButton } from './play-button'
+import { PlayArea } from './play-area'
 
-Konva.pixelRatio = 4
+Konva.pixelRatio = 1
+
+export const PLAY_AREA_POS = { x: 50, y: 550 }
+export const PLAY_AREA_SIZE = { x: 1100, y: 200 }
 
 export interface Table extends MultipleListener {}
 
 export class Table {
 	static instance: Table | null = null
+	static hand: Hand | null = null
+	static piles: Piles | null = null
 
 	width: number
 	height: number
@@ -26,6 +34,8 @@ export class Table {
 	activeKeys: string[]
 	key: string
 	stagePos: Vector2d
+
+	gameManager: GameManager
 
 	static showMessage(text: string, type = 'error') {
 		webix.message({
@@ -44,7 +54,7 @@ export class Table {
 			container: 'container',
 			width: this.width,
 			height: this.height,
-			// draggable: true,
+			draggable: true,
 		})
 		$(window).resize(() => {
 			this.stage.size({
@@ -58,6 +68,7 @@ export class Table {
 		this.activeKeys = []
 		this.key = 'Space'
 		this.stagePos = this.stage.position()
+		this.gameManager = new GameManager()
 
 		this.init()
 	}
@@ -77,54 +88,69 @@ export class Table {
 		this.applyDefaultScale()
 		this.drawBackground()
 		this.initMultipleListener(this.stage)
+		this.applyDefaultOnWheel()
 		this.initPiles()
 		this.drawPlayArea()
+		this.drawPlayButton()
 		this.initHand()
-
-		
+		this.startListenButton()
 	}
 
-	initHand(){
+	startListenButton() {
+		console.log($('#megabutton'))
+		$('#megabutton').on('click', () => {
+			const address = $('#address').val().toString().split(':')
+			const name = $('#name').val().toString()
+			const room = $('#room').val().toString()
+			const players = Number($('#players').val().toString())
+			console.log(address, name, room, players)
+			this.gameManager.init(address[0], address[1], name, room, players)
+			$('#overlayForm').hide()
+		})
+	}
+
+	initHand() {
 		const handGroupLayer = this.layerManager.getLayer('hand')
-		if ('add' in handGroupLayer)
-			new Hand(handGroupLayer, { x: 50, y: 800 }, { x: 900, y: 0 })
+		if ('add' in handGroupLayer) {
+			const hand = new Hand(
+				handGroupLayer,
+				{ x: 50, y: 800 },
+				{ x: 900, y: 0 }
+			)
+			hand.setPlayOnMatRegion(PLAY_AREA_POS, PLAY_AREA_SIZE)
+		}
 	}
 
-	initPiles(){
+	initPiles() {
 		const tableDecksLayer = this.layerManager.getLayer('table-decks')
-		if ('add' in tableDecksLayer) 
-			new Piles(tableDecksLayer,{x:50,y:50},{x:1100,y:500})
+		if ('add' in tableDecksLayer)
+			new Piles(tableDecksLayer, { x: 50, y: 50 }, { x: 1100, y: 500 })
 	}
 
-	drawBackground(){
+	drawBackground() {
 		const grpLayer = this.layerManager.getLayer('backplate')
 		if ('add' in grpLayer) {
 			Konva.Image.fromURL(img, (image) => {
 				// image is Konva.Image instance
-				image.width(this.stage.width())
-				image.height(this.stage.height())
+				image.width(1920)
+				image.height(1080)
 				grpLayer.add(image)
 			})
 		}
 	}
 
-	drawPlayArea(){
-		const grpLayer = this.layerManager.getLayer('areas')
-		if('add' in grpLayer)
-			grpLayer.add(new Rect({
-				x:50,
-				y:550,
-				width:1100,
-				height:200,
-				fill:'#66aa66',
-				stroke: '#339933',
-				strokeWidth:1,
-				
-			}))
+	drawPlayArea() {
+		const tableDecksLayer = this.layerManager.getLayer('table-decks')
+		if ('add' in tableDecksLayer) new PlayArea(tableDecksLayer)
+	}
+
+	drawPlayButton() {
+		const grpLayer = this.layerManager.getLayer('table-decks')
+		if ('add' in grpLayer) new PlayButton(grpLayer, { x: 1400, y: 550 })
 	}
 
 	applyDefaultScale() {
-		this.stage.scale({ x: 1, y: 1 })
+		this.stage.scale({ x: 0.4, y: 0.4 })
 	}
 
 	changeScale(changeOn: number) {

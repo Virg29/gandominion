@@ -3,7 +3,7 @@ export interface State {
 	Players: Player[]
 	Kingdom: Kingdom
 	PlayerId: string
-	PlayerState: PlayerState
+	PlayerState: CurrentPlayerState
 }
 
 export interface Player {
@@ -12,83 +12,34 @@ export interface Player {
 }
 
 export interface PublicState {
-	Hand: any[]
-	OnPlay: any[]
-	PublicDiscard: any[]
-	ActionsCount: number
-	BuyCount: number
-	AdditionalMoney: number
-	AllCards: AllCard[]
-}
-
-export interface AllCard {
-	$type: string
-	Name: string
-	Cost: number
-	Money?: number
-	Text: string
-	CardTypeId: number
-	Types: number[]
-	VictoryPoints?: number
+	OnPlay: number[]
+	AllCards: number[]
+	PublicDiscard: number[]
 }
 
 export interface Kingdom {
 	Piles: Piles
-	Trash: any[]
+	Trash: number[]
 }
 
 export interface Piles {
-	[key: string]: Card
+	[key: number]: Pile
 }
 
-export interface Card {
+export interface Pile {
 	Type: number
 	Count: number
 	Cost: number
 }
 
-export interface PlayerState {
-	Deck: Deck[]
-	Hand: HandCard[]
-	OnPlay: any[]
-	PublicDiscard: any[]
+export interface CurrentPlayerState {
+	Deck: number[]
+	Hand: number[]
+	OnPlay: number[]
 	ActionsCount: number
 	BuyCount: number
 	AdditionalMoney: number
 	TotalMoney: number
-	AllCards: AllCard2[]
-	Discard: any[]
-}
-
-export interface Deck {
-	$type: string
-	Name: string
-	Cost: number
-	Money?: number
-	Text: string
-	CardTypeId: number
-	Types: number[]
-	VictoryPoints?: number
-}
-
-export interface HandCard {
-	$type: string
-	Name: string
-	Cost: number
-	Money?: number
-	Text: string
-	CardTypeId: number
-	Types: number[]
-	VictoryPoints?: number
-}
-
-export interface AllCard2 {
-	$type: string
-	Name: string
-	Cost: number
-	Money?: number
-	Text: string
-	CardTypeId: number
-	Types: number[]
-	VictoryPoints?: number
+	AllCards: number[]
+	Discard: number[]
 }
