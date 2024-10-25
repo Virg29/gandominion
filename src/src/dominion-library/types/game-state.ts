@@ -49,7 +49,7 @@ export interface Card {
 
 export interface PlayerState {
 	Deck: Deck[]
-	Hand: Hand[]
+	Hand: HandCard[]
 	OnPlay: any[]
 	PublicDiscard: any[]
 	ActionsCount: number
@@ -71,7 +71,7 @@ export interface Deck {
 	VictoryPoints?: number
 }
 
-export interface Hand {
+export interface HandCard {
 	$type: string
 	Name: string
 	Cost: number

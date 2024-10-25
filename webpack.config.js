@@ -25,7 +25,7 @@ module.exports = {
 		compress: true,
 		port: process.env.DEV_PORT ? process.env.DEV_PORT : 8301,
 		// open: ['/'],
-		// hot: true,
+		hot: true,
 	},
 	resolve: {
 		// Add `.ts` and `.tsx` as a resolvable extension.
@@ -54,6 +54,14 @@ module.exports = {
 			// 	test: /\.js$/,
 			// 	enforce: 'pre',
 			// 	use: ['source-map-loader'],
+			// },
+			// {
+			// 	test: /\.(png|jpe?g|gif)$/i,
+			// 	use: [
+			// 		{
+			// 			loader: 'file-loader',
+			// 		},
+			// 	],
 			// },
 			{
 				test: /\.tsx?$/,

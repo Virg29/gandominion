@@ -1,7 +1,7 @@
 import '../../scss/shipmap/scss.scss'
 import '../../scss/general/cssFF/Arial.scss'
 import { Table } from './table'
-import '../../assets/img/favicon.ico'
+import '../../assets/img/favicon.png'
 import View from './view'
 
 var shippane

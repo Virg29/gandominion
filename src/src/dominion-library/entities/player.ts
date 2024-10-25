@@ -1,4 +1,5 @@
-import { State } from '../types/game-state'
+import { HandCard, State } from '../types/game-state'
+import Card from './card'
 import Hand from './hand'
 import PlayerDeck from './player-deck'
 
@@ -22,8 +23,8 @@ export default class Player {
 		this.turnBuys = PlayerState.BuyCount
 		this.buyPotentia = PlayerState.AdditionalMoney
 		
-		this.hand = PlayerState.Hand.map((card)=>{
-			card.
-		})
+		// this.hand = PlayerState.Hand.map((card:HandCard):any=>{
+		// 	return undefined
+		// })
 	}
 }

@@ -6,6 +6,11 @@ import * as webix from 'webix'
 import { applyMixins } from '../common/utils/apply-mixins'
 import { MultipleListener } from '../mixins/multiplelistener'
 import LayerManager from './layermanager'
+import { Image } from 'konva/lib/shapes/Image'
+import img from '../../assets/img/bg.jpg'
+import Piles from './piles'
+import { Rect } from 'konva/lib/shapes/Rect'
+import Hand from './hand'
 
 Konva.pixelRatio = 4
 
@@ -39,7 +44,7 @@ export class Table {
 			container: 'container',
 			width: this.width,
 			height: this.height,
-			draggable: true,
+			// draggable: true,
 		})
 		$(window).resize(() => {
 			this.stage.size({
@@ -58,9 +63,10 @@ export class Table {
 	}
 	createLayers() {
 		this.layerManager.createLayer({ listening: false }, 'backplate')
+		this.layerManager.createLayer({ listening: false }, 'areas')
 		this.layerManager.createLayer({}, 'table-decks')
 		this.layerManager.createLayer({}, 'hand')
-		this.layerManager.createLayer({}, 'buttons')
+		// this.layerManager.createLayer({}, 'buttons')
 	}
 
 	getSize() {
@@ -69,10 +75,52 @@ export class Table {
 
 	init() {
 		this.applyDefaultScale()
+		this.drawBackground()
 		this.initMultipleListener(this.stage)
-		// this.applyKeyListneres()
-		// this.applyDefaultOnWheel()
-		// this.applyDefaultOnDrag()
+		this.initPiles()
+		this.drawPlayArea()
+		this.initHand()
+
+		
+	}
+
+	initHand(){
+		const handGroupLayer = this.layerManager.getLayer('hand')
+		if ('add' in handGroupLayer)
+			new Hand(handGroupLayer, { x: 50, y: 800 }, { x: 900, y: 0 })
+	}
+
+	initPiles(){
+		const tableDecksLayer = this.layerManager.getLayer('table-decks')
+		if ('add' in tableDecksLayer) 
+			new Piles(tableDecksLayer,{x:50,y:50},{x:1100,y:500})
+	}
+
+	drawBackground(){
+		const grpLayer = this.layerManager.getLayer('backplate')
+		if ('add' in grpLayer) {
+			Konva.Image.fromURL(img, (image) => {
+				// image is Konva.Image instance
+				image.width(this.stage.width())
+				image.height(this.stage.height())
+				grpLayer.add(image)
+			})
+		}
+	}
+
+	drawPlayArea(){
+		const grpLayer = this.layerManager.getLayer('areas')
+		if('add' in grpLayer)
+			grpLayer.add(new Rect({
+				x:50,
+				y:550,
+				width:1100,
+				height:200,
+				fill:'#66aa66',
+				stroke: '#339933',
+				strokeWidth:1,
+				
+			}))
 	}
 
 	applyDefaultScale() {
