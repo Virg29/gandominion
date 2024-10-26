@@ -9,12 +9,18 @@ import { Table } from './table'
 import { PlayArea } from './play-area'
 
 const CARD_WIDTH_SIZE = 110
+const DISCARD_START_POS = {
+	x: 1800,
+	y: 10,
+}
+const DISCARD_SHIFT = 50
 
 export default class Hand {
 	drawOn: Group
 	regionSize: Vector2d
 	startPos: Vector2d
 	cards: CardInHand[] = []
+	discard: DiscardedCard[] = []
 
 	playOnMatPos: Vector2d
 	playOnMatSize: Vector2d
@@ -44,13 +50,17 @@ export default class Hand {
 
 	clear() {}
 
-	async updateHand(cards: { name: string }[]) {
+	async updateHand(cards: { name: string }[], discard: { name: string }[]) {
 		if (this.cards.length) {
 			this.cards.forEach((card) => {
 				card.destruct()
-				console.log('lol')
 			})
 			this.cards = []
+		}
+
+		if (this.discard.length) {
+			this.discard.forEach((card) => card.destruct())
+			this.discard = []
 		}
 
 		const maxAmount = this.regionSize.x / CARD_WIDTH_SIZE
@@ -81,6 +91,49 @@ export default class Hand {
 			this.drawOn.add(card.image)
 		})
 		this.cards.push(...loadedCards)
+
+		let k = 0
+		const loadingDiscardPromises: Promise<DiscardedCard>[] = []
+		for (const card of discard) {
+			loadingDiscardPromises.push(
+				new DiscardedCard(getCardImageUrlByName(card.name), {
+					x: DISCARD_START_POS.x,
+					y: DISCARD_START_POS.y + k * DISCARD_SHIFT,
+				}).loadImage()
+			)
+			k++
+		}
+		const loadedDiscardCards = await Promise.all(loadingDiscardPromises)
+		loadedDiscardCards.forEach((card) => {
+			this.drawOn.add(card.image)
+		})
+	}
+}
+
+export class DiscardedCard {
+	image: Image
+	url: string
+	position: Vector2d
+
+	constructor(url: string, position: Vector2d) {
+		this.url = url
+		this.position = position
+	}
+
+	loadImage(): Promise<DiscardedCard> {
+		return new Promise((res, rej) => {
+			Image.fromURL(this.url, (img) => {
+				img.draggable(true)
+				img.scale({ x: 0.5, y: 0.5 })
+				img.position(this.position)
+				this.image = img
+				res(this)
+			})
+		})
+	}
+
+	destruct() {
+		this.image.destroy()
 	}
 }
 
