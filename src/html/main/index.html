@@ -15,6 +15,7 @@
         <input type="text" id="name", placeholder="name" />
         <input type="text" id="room", placeholder="room" />
         <input type="text" id="players", placeholder="players" />
+        <input type="checkbox" id="spectator" />
         <button id="megabutton">Submit</button>
     	</div>
 		<div id="container"></div>
@@ -40,6 +41,12 @@
 
         /* Style for form inputs */
         #overlayForm input[type="text"] {
+            width: 100%;
+            margin: 5px 0;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+		 #overlayForm input[type="checkbox"] {
             width: 100%;
             margin: 5px 0;
             padding: 8px;

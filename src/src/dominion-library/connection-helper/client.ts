@@ -50,6 +50,7 @@ export default class DominionIOClient {
 		playerName: string,
 		roomName: string,
 		playersAmount: number,
+		spectator: boolean,
 		onTurn: (data: Table) => void,
 		clarificatePlay: (...args: any) => void,
 		endGame: (...args: any) => void
@@ -112,6 +113,7 @@ export default class DominionIOClient {
 			PlayerName: playerName,
 			RoomName: roomName,
 			RoomSize: playersAmount,
+			IsSpectator: spectator,
 		})
 	}
 

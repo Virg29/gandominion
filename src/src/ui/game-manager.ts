@@ -21,7 +21,8 @@ export default class GameManager {
 		port: string,
 		name: string,
 		room: string,
-		players: number
+		players: number,
+		spectator: boolean
 	) {
 		this.ioClient.setUpConnection(
 			address,
@@ -29,6 +30,7 @@ export default class GameManager {
 			name,
 			room,
 			players,
+			spectator,
 			(data) => {
 				this.onTurn(data)
 			},

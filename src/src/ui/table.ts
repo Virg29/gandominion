@@ -105,8 +105,16 @@ export class Table {
 			const name = $('#name').val().toString()
 			const room = $('#room').val().toString()
 			const players = Number($('#players').val().toString())
+			const spectator = $('#spectator').is(':checked')
 			console.log(address, name, room, players)
-			this.gameManager.init(address[0], address[1], name, room, players)
+			this.gameManager.init(
+				address[0],
+				address[1],
+				name,
+				room,
+				players,
+				spectator
+			)
 			$('#overlayForm').hide()
 		})
 	}
