@@ -14,6 +14,7 @@ import Hand from './hand'
 import GameManager from './game-manager'
 import { PlayButton } from './play-button'
 import { PlayArea } from './play-area'
+import { ClarificatePlayMenu } from './clarificate-play'
 
 Konva.pixelRatio = 1
 
@@ -94,6 +95,7 @@ export class Table {
 		this.drawPlayButton()
 		this.initHand()
 		this.startListenButton()
+		this.initClarificateModal()
 	}
 
 	startListenButton() {
@@ -107,6 +109,11 @@ export class Table {
 			this.gameManager.init(address[0], address[1], name, room, players)
 			$('#overlayForm').hide()
 		})
+	}
+
+	initClarificateModal() {
+		const handGroupLayer = this.layerManager.getLayer('hand')
+		if ('add' in handGroupLayer) new ClarificatePlayMenu(handGroupLayer)
 	}
 
 	initHand() {

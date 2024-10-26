@@ -14,7 +14,7 @@ import { io } from 'socket.io-client'
 export default class DominionIOClient {
 	socket: Socket
 	onTurn: (data: Table) => void
-	clarificatePlay: (args: number[]) => void
+	clarificatePlay: (cards: number[], cb: (data: number[]) => void) => void
 	endGame: (...args: any) => void
 
 	static processState(data: State): Table {
@@ -65,14 +65,44 @@ export default class DominionIOClient {
 			this.onTurn(DominionIOClient.processState(state))
 		})
 
-		this.socket.on('clarificatePlay', (data) => {
-			console.log(data)
-			clarificatePlay(data)
-		})
+		this.socket.on(
+			'clarificatePlay',
+			(
+				data: {
+					PlayedCard: number
+					PlayedBy: number | null
+					Args: number[]
+				},
+				cb
+			) => {
+				console.log(data)
+				console.log(data)
+				console.log(data)
+				console.log(data)
+				console.log(data)
+				console.log(data)
+				console.log(data)
+				console.log(data)
+				console.log(data)
+				console.log(data)
+				console.log(cb)
+				clarificatePlay(data, cb)
+			}
+		)
 
-		this.socket.on('endGame', (data) => {
-			clarificatePlay(data)
-		})
+		this.socket.on(
+			'endGame',
+			(data: {
+				WinnerName: string
+				Players: {
+					Name: string
+					Plays: number
+					VictoryPoints: number
+				}[]
+			}) => {
+				endGame(data)
+			}
+		)
 
 		this.socket.on('exception', (data: any) => {
 			this.errorEmitter(data)

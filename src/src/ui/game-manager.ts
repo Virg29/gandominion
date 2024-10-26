@@ -1,5 +1,6 @@
 import DominionIOClient from '../dominion-library/connection-helper/client'
 import { Table } from '../dominion-library/entities/table'
+import { ClarificatePlayMenu } from './clarificate-play'
 import { PlayArea } from './play-area'
 import { Table as UiTable } from './table'
 
@@ -31,13 +32,27 @@ export default class GameManager {
 			(data) => {
 				this.onTurn(data)
 			},
-			(data) => {
-				// this.onTurn(data)
+			(data, cb) => {
+				this.onClarificate(data, cb)
 			},
-			(data) => {
-				console.log(data)
+			(data: {
+				WinnerName: string
+				Players: {
+					Name: string
+					Plays: number
+					VictoryPoints: number
+				}[]
+			}) => {
+				UiTable.showMessage(`winner: ${data.WinnerName}`)
 			}
 		)
+	}
+
+	onClarificate(
+		data: { PlayedCard: number; PlayedBy: number | null; Args: number[] },
+		cb: (data: { Args: number[] }) => void
+	) {
+		ClarificatePlayMenu.instance.clarify(data, cb)
 	}
 
 	onTurn(data: Table) {
