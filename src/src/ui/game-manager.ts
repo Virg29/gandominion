@@ -60,7 +60,7 @@ export default class GameManager {
 	onTurn(data: Table) {
 		UiTable.hand.updateHand(
 			data.me.hand.map((card) => ({ name: card.name })),
-			data.me.discard.map((card) => ({
+			data.me.allCards.map((card) => ({
 				name: card.name,
 			}))
 		)

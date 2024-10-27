@@ -107,6 +107,7 @@ export default class Hand {
 		loadedDiscardCards.forEach((card) => {
 			this.drawOn.add(card.image)
 		})
+		this.discard.push(...loadedDiscardCards)
 	}
 }
 
@@ -123,7 +124,7 @@ export class DiscardedCard {
 	loadImage(): Promise<DiscardedCard> {
 		return new Promise((res, rej) => {
 			Image.fromURL(this.url, (img) => {
-				img.draggable(true)
+				img.draggable(false)
 				img.scale({ x: 0.5, y: 0.5 })
 				img.position(this.position)
 				this.image = img
