@@ -10,14 +10,34 @@ import { CardEnum } from '../dominion-library/entities/card'
 import GameManager from './game-manager'
 import { PlayArea } from './play-area'
 import { PLAY_BUTTON_POS } from './config'
+import Konva from 'konva'
 
 export interface PlayButton extends MultipleListener, Hoverlightable {}
 
 export class PlayButton {
+	static instance: PlayButton
+	disabled: boolean = false
+
 	image: Image
 
 	constructor(drawOn: Group) {
+		PlayButton.instance = this
+
 		this.initializeImage(drawOn, PLAY_BUTTON_POS)
+	}
+
+	disable() {
+		this.disabled = true
+		this.image.filters([...this.image.filters(), Konva.Filters.Grayscale])
+	}
+
+	enable() {
+		this.disabled = false
+		this.image.filters([
+			...this.image
+				.filters()
+				.filter((filter) => filter !== Konva.Filters.Grayscale),
+		])
 	}
 
 	private initializeImage(drawOn: Group, position: Vector2d) {
@@ -30,11 +50,16 @@ export class PlayButton {
 			this.setFiltersApplyable(this.image)
 			this.applyHoverLightEvent()
 			this.applyClickEvents()
+			this.image.cache()
+			this.image.filters(this.image.filters() ?? [])
+			this.enable()
 		})
 	}
 
 	private applyClickEvents() {
 		const playAction = () => {
+			if (PlayButton.instance.disabled) return
+
 			const currentPlayedName = PlayArea.instance.currentPlayed.name
 			const sequenceCardNames = PlayArea.instance.playSequenceCards.map(
 				(card) => card.name

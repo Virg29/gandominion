@@ -7,7 +7,12 @@ import img from '../../assets/img/bg.jpg'
 import { applyMixins } from '../common/utils/apply-mixins'
 import { MultipleListener } from '../mixins/multiplelistener'
 import { ClarificatePlayMenu } from './clarificate-play'
-import { PLAY_AREA_POS, PLAY_AREA_SIZE, TURN_BUTTON_POS } from './config'
+import {
+	PLAY_AREA_POS,
+	PLAY_AREA_SIZE,
+	STAGE_SIZE,
+	TURN_BUTTON_POS,
+} from './config'
 import GameManager from './game-manager'
 import Hand from './hand'
 import LayerManager from './layermanager'
@@ -167,8 +172,8 @@ export class Table {
 		if ('add' in grpLayer) {
 			Konva.Image.fromURL(img, (image) => {
 				// image is Konva.Image instance
-				image.width(1920)
-				image.height(1080)
+				image.width(STAGE_SIZE.x)
+				image.height(STAGE_SIZE.y)
 				grpLayer.add(image)
 			})
 		}
@@ -185,13 +190,16 @@ export class Table {
 	}
 
 	applyDefaultScale() {
-		this.stage.scale({ x: 0.4, y: 0.4 })
+		const windowWidth = $(window).width()
+		const size = windowWidth / STAGE_SIZE.x
+		this.stage.scale({ x: size, y: size })
 	}
 
 	changeScale(changeOn: number) {
 		var newScale = this.stage.scaleX() + changeOn
 		this.stage.scale({ x: newScale, y: newScale })
 	}
+
 	rotation(rot: number = null, rad: boolean = false) {
 		if (rot == null)
 			return rad

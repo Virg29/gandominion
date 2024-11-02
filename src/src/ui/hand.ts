@@ -16,10 +16,11 @@ import {
 	HAND_AREA_SIZE,
 	DECK_COLUMN_MAX,
 } from './config'
-import { Circle } from 'konva/lib/shapes/Circle'
 
 export default class Hand {
 	static instance: Hand
+	disabled: boolean = false
+
 	drawOn: Group
 	regionSize: Vector2d
 	startPos: Vector2d
@@ -31,9 +32,20 @@ export default class Hand {
 	constructor(drawOn: Group) {
 		Hand.instance = this
 		Table.hand = this
+
 		this.drawOn = drawOn
 		this.startPos = HAND_AREA_POS
 		this.regionSize = HAND_AREA_SIZE
+	}
+
+	disable() {
+		this.disabled = true
+		this.cards.forEach((cardInHand) => cardInHand.image.draggable(false))
+	}
+
+	enable() {
+		this.disabled = false
+		this.cards.forEach((cardInHand) => cardInHand.image.draggable(true))
 	}
 
 	setPlayOnMatRegion(startPos: Vector2d, size: Vector2d) {
@@ -103,6 +115,11 @@ export default class Hand {
 
 	private addCardsToGroup(cards: (CardInHand | DeckCard)[]) {
 		cards.forEach((card) => this.drawOn.add(card.image))
+	}
+
+	clearHand() {
+		this.cards.forEach((card) => card.destruct())
+		this.cards = []
 	}
 
 	private clearHandAndDeck() {
@@ -201,7 +218,7 @@ export class CardInHand {
 	): Promise<CardInHand> {
 		return new Promise((res) => {
 			Image.fromURL(this.url, (img) => {
-				img.draggable(draggable)
+				img.draggable(draggable && !Hand.instance.disabled)
 				img.scale({ x: scale, y: scale })
 				img.position(this.position)
 				this.image = img

@@ -9,11 +9,14 @@ import { Vector2d } from 'konva/lib/types'
 import { CardEnum } from '../dominion-library/entities/card'
 import { getCardImageUrlByName } from './cards-images'
 import { CLARIFIY_BUTTON_POS, PLAY_AREA_POS, PLAY_AREA_SIZE } from './config'
+import Konva from 'konva'
 
 export interface ClarificatePlayMenu extends MultipleListener, Hoverlightable {}
 
 export class ClarificatePlayMenu {
 	static instance: ClarificatePlayMenu
+	disabled: boolean = false
+
 	callback: (data: { Args: number[] }) => void = null
 	drawOn: Group
 	button: Image
@@ -26,6 +29,20 @@ export class ClarificatePlayMenu {
 		this.initializeButton()
 	}
 
+	disable() {
+		this.disabled = true
+		this.button.filters([...this.button.filters(), Konva.Filters.Grayscale])
+	}
+
+	enable() {
+		this.disabled = false
+		this.button.filters([
+			...this.button
+				.filters()
+				.filter((filter) => filter !== Konva.Filters.Grayscale),
+		])
+	}
+
 	clarify(
 		data: {
 			PlayedCard: number
@@ -34,14 +51,13 @@ export class ClarificatePlayMenu {
 		},
 		cb: (data: { Args: number[] }) => void
 	) {
+		this.enable()
 		this.callback = cb
 		Table.showMessage(
 			`Played By ${
 				data.PlayedBy != null ? CardEnum[data.PlayedBy] : 'nothing'
 			}, Card is ${CardEnum[data.PlayedCard]}`
 		)
-
-		console.log(data)
 
 		this.renderCards(data.Args.$values)
 	}
@@ -105,6 +121,7 @@ export class ClarificatePlayMenu {
 			(img) => {
 				this.button = img
 				this.applyImageEvents(this.button)
+				this.disable()
 			}
 		)
 	}
@@ -119,6 +136,8 @@ export class ClarificatePlayMenu {
 			img.scale({ x: scale, y: scale })
 			img.position(position)
 			this.drawOn.add(img)
+			img.cache()
+			img.filters(img.filters() ?? [])
 			callback(img)
 		})
 	}
@@ -136,6 +155,8 @@ export class ClarificatePlayMenu {
 	}
 
 	private handleSelection() {
+		if (ClarificatePlayMenu.instance.disabled) return
+
 		const names = this.selectedCards.map((card) => card.name)
 		const args = names.map(
 			(name) => CardEnum[name as unknown as number]
@@ -143,6 +164,8 @@ export class ClarificatePlayMenu {
 		console.log(args)
 		this.callback({ Args: args })
 		this.clearAll()
+
+		ClarificatePlayMenu.instance.disable()
 	}
 }
 

@@ -89,7 +89,7 @@ export default class Piles {
 			const position = {
 				x:
 					this.startPos.x +
-					leftovers *
+					(leftovers - 1) *
 						(this.regionSize.x /
 							PILES_DRAW_CONFIG.MAX_DRAW_AT_LINE),
 				y:

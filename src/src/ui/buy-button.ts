@@ -8,16 +8,36 @@ import Piles from './piles'
 
 import BuyButtonImg from '../../assets/img/bb.jpg'
 import { BUY_BUTTON_POS } from './config'
+import Konva from 'konva'
 
 export interface BuyButton extends MultipleListener, Hoverlightable {}
 export class BuyButton {
+	static instance: BuyButton
+	disabled: boolean = false
+
 	image: Image
 	name: string
 	piles: Piles
 
 	constructor(drawOn: Group, piles: Piles) {
+		BuyButton.instance = this
 		this.piles = piles
+
 		this.initializeImage(drawOn, BUY_BUTTON_POS)
+	}
+
+	disable() {
+		this.disabled = true
+		this.image.filters([...this.image.filters(), Konva.Filters.Grayscale])
+	}
+
+	enable() {
+		this.disabled = false
+		this.image.filters([
+			...this.image
+				.filters()
+				.filter((filter) => filter !== Konva.Filters.Grayscale),
+		])
 	}
 
 	private initializeImage(drawOn: Group, position: Vector2d) {
@@ -27,6 +47,9 @@ export class BuyButton {
 			drawOn.add(img)
 			this.image = img
 			this.setupImageEvents()
+			this.image.filters(this.image.filters() ?? [])
+			this.image.cache()
+			this.enable()
 		})
 	}
 
@@ -38,7 +61,9 @@ export class BuyButton {
 	}
 
 	private applyClickEvents() {
-		const triggerBuy = () => this.piles.buyAll()
+		const triggerBuy = () => {
+			if (!this.disabled) this.piles.buyAll()
+		}
 		this.on('click', triggerBuy, this)
 		this.on('tap', triggerBuy, this)
 	}
