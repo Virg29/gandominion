@@ -1,12 +1,9 @@
 import { Group } from 'konva/lib/Group'
 import { Image } from 'konva/lib/shapes/Image'
 import { Vector2d } from 'konva/lib/types'
-import { getCardImageUrlByName } from './cards-images'
-import { Text } from 'konva/lib/shapes/Text'
-import { MultipleListener } from '../mixins/multiplelistener'
-import { Hoverlightable } from '../mixins/hoverlight'
 import { applyMixins } from '../common/utils/apply-mixins'
-import { Table } from './table'
+import { Hoverlightable } from '../mixins/hoverlight'
+import { MultipleListener } from '../mixins/multiplelistener'
 import Piles from './piles'
 
 import BuyButtonImg from '../../assets/img/bb.jpg'
@@ -19,38 +16,34 @@ export class BuyButton {
 
 	constructor(drawOn: Group, piles: Piles, position: Vector2d) {
 		this.piles = piles
+		this.initializeImage(drawOn, position)
+	}
 
+	private initializeImage(drawOn: Group, position: Vector2d) {
 		Image.fromURL(BuyButtonImg, (img) => {
 			img.scale({ x: 0.3, y: 0.3 })
 			img.position(position)
 			drawOn.add(img)
 			this.image = img
-			this.initMultipleListener(this.image, true)
-			this.setFiltersApplyable(this.image)
-			this.applyHoverLightEvent()
-			this.applyClickEvents()
+			this.setupImageEvents()
 		})
 	}
 
-	applyClickEvents() {
-		this.on(
-			'click',
-			() => {
-				this.piles.buyAll()
-			},
-			this
-		)
-		this.on(
-			'tap',
-			() => {
-				this.piles.buyAll()
-			},
-			this
-		)
+	private setupImageEvents() {
+		this.initMultipleListener(this.image, true)
+		this.setFiltersApplyable(this.image)
+		this.applyHoverLightEvent()
+		this.applyClickEvents()
+	}
+
+	private applyClickEvents() {
+		const triggerBuy = () => this.piles.buyAll()
+		this.on('click', triggerBuy, this)
+		this.on('tap', triggerBuy, this)
 	}
 
 	destruct() {
-		this.image.destroy()
+		this.image?.destroy()
 	}
 }
 

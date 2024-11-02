@@ -11,16 +11,11 @@ import { BuyButton } from './buy-button'
 import { CardEnum } from '../dominion-library/entities/card'
 import GameManager from './game-manager'
 import { PlayArea } from './play-area'
-
-const CARDS_IN_LINE = 8
-const TOTAL_LINES = 3
-
-const PREBUY_STORAGE_POS = {
-	x: 900,
-	y: 400,
-}
-
-const PREBUY_STORAGE_SHIFT = 50
+import {
+	PILES_DRAW_CONFIG,
+	PREBUY_STORAGE_POS,
+	PREBUY_STORAGE_SHIFT,
+} from './config'
 
 export default class Piles {
 	drawOn: Group
@@ -28,87 +23,96 @@ export default class Piles {
 	startPos: Vector2d
 	piles: Pile[] = []
 	preBuyCards: PreBuyCard[] = []
-
 	buyButton: BuyButton
 
 	constructor(drawOn: Group, startPos: Vector2d, size: Vector2d) {
 		Table.piles = this
 		this.drawOn = drawOn
-		;(this.startPos = startPos), (this.regionSize = size)
-
-		this.buyButton = new BuyButton(drawOn, this, {
-			x: 1180,
-			y: 550,
-		})
+		this.startPos = startPos
+		this.regionSize = size
+		this.buyButton = new BuyButton(drawOn, this, { x: 1180, y: 550 })
 	}
 
 	buyAll() {
-		const names = this.preBuyCards.map((card) => card.name)
-		const types = names.map(
-			(name) =>
-				Object.keys(CardEnum)[Object.values(CardEnum).indexOf(name)]
+		const types = this.preBuyCards.map(
+			(card) =>
+				Object.keys(CardEnum)[
+					Object.values(CardEnum).indexOf(card.name)
+				]
 		)
-		console.log(types)
 		GameManager.instance.buy(types as unknown as number[])
-
-		if (this.preBuyCards.length)
-			this.preBuyCards.forEach((card) => card.destruct())
-		this.preBuyCards = []
+		this.clearPreBuyCards()
 	}
 
 	addToPreBuy(name: string) {
-		this.preBuyCards.push(
-			new PreBuyCard(
-				this.drawOn,
-				this,
-				name,
-				getCardImageUrlByName(name),
-				{
-					x:
-						PREBUY_STORAGE_POS.x +
-						this.preBuyCards.length * PREBUY_STORAGE_SHIFT,
-					y: PREBUY_STORAGE_POS.y,
-				}
-			)
+		const position = {
+			x:
+				PREBUY_STORAGE_POS.x +
+				this.preBuyCards.length * PREBUY_STORAGE_SHIFT,
+			y: PREBUY_STORAGE_POS.y,
+		}
+		const newCard = new PreBuyCard(
+			this.drawOn,
+			this,
+			name,
+			getCardImageUrlByName(name),
+			position
 		)
+		this.preBuyCards.push(newCard)
 	}
 
 	clearFromPreBuy(name: string) {
-		const index = this.preBuyCards.findIndex((card) => card.name == name)
-		const preBuyCard = this.preBuyCards[index]
-		this.preBuyCards.splice(index, 1)
-		preBuyCard.destruct()
+		const index = this.preBuyCards.findIndex((card) => card.name === name)
+		if (index !== -1) {
+			this.preBuyCards[index].destruct()
+			this.preBuyCards.splice(index, 1)
+		}
 	}
 
 	updatePiles(cards: { name: string; amount: number }[]) {
-		if (this.preBuyCards.length)
-			this.preBuyCards.forEach((card) => card.destruct())
-		if (this.piles.length) this.piles.forEach((pile) => pile.destruct())
+		this.clearPreBuyCards()
+		this.clearPiles()
+		this.piles = cards.map((card, i) => {
+			let leftovers = i + 1
+			let rowNumber = 0
+			for (const rowLength of PILES_DRAW_CONFIG.ROWS) {
+				if (rowLength >= leftovers) {
+					break
+				}
+				leftovers -= rowLength
+				rowNumber += 1
+			}
 
-		this.preBuyCards = []
-		this.piles = []
+			const position = {
+				x:
+					this.startPos.x +
+					leftovers *
+						(this.regionSize.x /
+							PILES_DRAW_CONFIG.MAX_DRAW_AT_LINE),
+				y:
+					this.startPos.y +
+					rowNumber * PILES_DRAW_CONFIG.VERTICAL_SHIFT,
+			}
 
-		const incrementX = this.regionSize.x / CARDS_IN_LINE
-		const incrementY = this.regionSize.y / TOTAL_LINES
-		let i = 0
-		for (const card of cards) {
-			this.piles.push(
-				new Pile(
-					this.drawOn,
-					this,
-					card.name,
-					getCardImageUrlByName(card.name),
-					{
-						x: this.startPos.x + (i % CARDS_IN_LINE) * incrementX,
-						y:
-							this.startPos.y +
-							Math.floor(i / CARDS_IN_LINE) * incrementY,
-					},
-					card.amount
-				)
+			return new Pile(
+				this.drawOn,
+				this,
+				card.name,
+				getCardImageUrlByName(card.name),
+				position,
+				card.amount
 			)
-			i++
-		}
+		})
+	}
+
+	private clearPreBuyCards() {
+		this.preBuyCards.forEach((card) => card.destruct())
+		this.preBuyCards = []
+	}
+
+	private clearPiles() {
+		this.piles.forEach((pile) => pile.destruct())
+		this.piles = []
 	}
 }
 
@@ -127,7 +131,10 @@ export class PreBuyCard {
 	) {
 		this.name = name
 		this.piles = piles
+		this.loadImage(drawOn, url, position)
+	}
 
+	private loadImage(drawOn: Group, url: string, position: Vector2d) {
 		Image.fromURL(url, (img) => {
 			img.scale({ x: 0.5, y: 0.5 })
 			img.position(position)
@@ -140,27 +147,14 @@ export class PreBuyCard {
 		})
 	}
 
-	applyClickEvents() {
-		this.on(
-			'click',
-			() => {
-				this.piles.clearFromPreBuy(this.name)
-			},
-			this
-		)
-		this.on(
-			'tap',
-			() => {
-				this.piles.clearFromPreBuy(this.name)
-			},
-			this
-		)
+	private applyClickEvents() {
+		const clearCard = () => this.piles.clearFromPreBuy(this.name)
+		this.on('click', clearCard, this)
+		this.on('tap', clearCard, this)
 	}
 
 	destruct() {
-		try {
-			this.image.destroy()
-		} catch (e) {}
+		this.image?.destroy()
 	}
 }
 
@@ -170,7 +164,6 @@ export interface Pile extends MultipleListener, Hoverlightable {}
 export class Pile {
 	image: Image
 	text: Text
-
 	name: string
 	piles: Piles
 
@@ -190,7 +183,10 @@ export class Pile {
 			fontSize: 30,
 			...position,
 		})
+		this.loadImage(drawOn, url, position)
+	}
 
+	private loadImage(drawOn: Group, url: string, position: Vector2d) {
 		Image.fromURL(url, (img) => {
 			img.scale({ x: 0.5, y: 0.5 })
 			img.position(position)
@@ -200,42 +196,25 @@ export class Pile {
 			this.initMultipleListener(this.image, true)
 			this.setFiltersApplyable(this.image)
 			this.applyHoverLightEvent()
-			this.applyClickEvent()
+			this.applyClickEvents()
 		})
 	}
 
-	applyClickEvent() {
-		this.on(
-			'click',
-			(e) => {
-				if (PlayArea.instance.isActive) {
-					PlayArea.instance.addPlaySequenceCard(this.name)
-					return
-				}
-
+	private applyClickEvents() {
+		const handleClick = () => {
+			if (PlayArea.instance.isActive) {
+				PlayArea.instance.addPlaySequenceCard(this.name)
+			} else {
 				this.piles.addToPreBuy(this.name)
-			},
-			this
-		)
-		this.on(
-			'tap',
-			(e) => {
-				if (PlayArea.instance.isActive) {
-					PlayArea.instance.addPlaySequenceCard(this.name)
-					return
-				}
-
-				this.piles.addToPreBuy(this.name)
-			},
-			this
-		)
+			}
+		}
+		this.on('click', handleClick, this)
+		this.on('tap', handleClick, this)
 	}
 
 	destruct() {
-		try {
-			this.text.destroy()
-			this.image.destroy()
-		} catch (e) {}
+		this.text?.destroy()
+		this.image?.destroy()
 	}
 }
 

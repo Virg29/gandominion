@@ -9,10 +9,7 @@ import { Table } from './table'
 import { PlayArea } from './play-area'
 
 const CARD_WIDTH_SIZE = 110
-const DISCARD_START_POS = {
-	x: 1800,
-	y: 10,
-}
+const DISCARD_START_POS = { x: 1800, y: 10 }
 const DISCARD_SHIFT = 50
 
 export default class Hand {
@@ -21,14 +18,14 @@ export default class Hand {
 	startPos: Vector2d
 	cards: CardInHand[] = []
 	discard: DiscardedCard[] = []
-
 	playOnMatPos: Vector2d
 	playOnMatSize: Vector2d
 
 	constructor(drawOn: Group, startPos: Vector2d, size: Vector2d) {
 		Table.hand = this
 		this.drawOn = drawOn
-		;(this.startPos = startPos), (this.regionSize = size)
+		this.startPos = startPos
+		this.regionSize = size
 	}
 
 	setPlayOnMatRegion(startPos: Vector2d, size: Vector2d) {
@@ -39,7 +36,6 @@ export default class Hand {
 	wasPlayed(pos: Vector2d) {
 		const xRelative = pos.x - this.playOnMatPos.x
 		const yRelative = pos.y - this.playOnMatPos.y
-
 		return (
 			xRelative >= 0 &&
 			xRelative <= this.playOnMatSize.x &&
@@ -48,93 +44,90 @@ export default class Hand {
 		)
 	}
 
-	clear() {}
-
 	async updateHand(cards: { name: string }[], discard: { name: string }[]) {
-		if (this.cards.length) {
-			this.cards.forEach((card) => {
-				card.destruct()
-			})
-			this.cards = []
-		}
+		this.clearHandAndDiscard()
 
-		if (this.discard.length) {
-			this.discard.forEach((card) => card.destruct())
-			this.discard = []
-		}
+		const cardPositions = this.calculateCardPositions(cards.length)
+		const cardPromises = cards.map((card, index) =>
+			new CardInHand(
+				this,
+				card.name,
+				getCardImageUrlByName(card.name),
+				cardPositions[index]
+			).loadImage()
+		)
 
-		const maxAmount = this.regionSize.x / CARD_WIDTH_SIZE
-		console.log(this.regionSize.x)
-		let i = 0
-		const loadingPromises: Promise<CardInHand>[] = []
-		for (const card of cards) {
-			loadingPromises.push(
-				new CardInHand(
-					this,
-					card.name,
-					getCardImageUrlByName(card.name),
-					{
-						x:
-							this.startPos.x +
-							(cards.length < maxAmount
-								? CARD_WIDTH_SIZE
-								: this.regionSize.x / (cards.length + 1)) *
-								i,
-						y: this.startPos.y,
-					}
-				).loadImage()
-			)
-			i++
-		}
-		const loadedCards = await Promise.all(loadingPromises)
-		loadedCards.forEach((card) => {
-			this.drawOn.add(card.image)
-		})
+		const discardPositions = discard.map((_, index) => ({
+			x: DISCARD_START_POS.x,
+			y: DISCARD_START_POS.y + index * DISCARD_SHIFT,
+		}))
+
+		const discardPromises = discard.map((card, index) =>
+			new DiscardedCard(
+				getCardImageUrlByName(card.name),
+				discardPositions[index]
+			).loadImage()
+		)
+
+		const [loadedCards, loadedDiscards] = await Promise.all([
+			Promise.all(cardPromises),
+			Promise.all(discardPromises),
+		])
+		this.addCardsToGroup(loadedCards)
 		this.cards.push(...loadedCards)
+		this.addCardsToGroup(loadedDiscards)
+		this.discard.push(...loadedDiscards)
+	}
 
-		let k = 0
-		const loadingDiscardPromises: Promise<DiscardedCard>[] = []
-		for (const card of discard) {
-			loadingDiscardPromises.push(
-				new DiscardedCard(getCardImageUrlByName(card.name), {
-					x: DISCARD_START_POS.x,
-					y: DISCARD_START_POS.y + k * DISCARD_SHIFT,
-				}).loadImage()
-			)
-			k++
-		}
-		const loadedDiscardCards = await Promise.all(loadingDiscardPromises)
-		loadedDiscardCards.forEach((card) => {
-			this.drawOn.add(card.image)
-		})
-		this.discard.push(...loadedDiscardCards)
+	private calculateCardPositions(cardCount: number): Vector2d[] {
+		const maxAmount = this.regionSize.x / CARD_WIDTH_SIZE
+		const positionIncrement =
+			cardCount < maxAmount
+				? CARD_WIDTH_SIZE
+				: this.regionSize.x / (cardCount + 1)
+		return Array.from({ length: cardCount }, (_, i) => ({
+			x: this.startPos.x + positionIncrement * i,
+			y: this.startPos.y,
+		}))
+	}
+
+	private addCardsToGroup(cards: (CardInHand | DiscardedCard)[]) {
+		cards.forEach((card) => this.drawOn.add(card.image))
+	}
+
+	private clearHandAndDiscard() {
+		this.cards.forEach((card) => card.destruct())
+		this.discard.forEach((card) => card.destruct())
+		this.cards = []
+		this.discard = []
 	}
 }
 
 export class DiscardedCard {
 	image: Image
-	url: string
-	position: Vector2d
-
-	constructor(url: string, position: Vector2d) {
-		this.url = url
-		this.position = position
-	}
+	constructor(private url: string, private position: Vector2d) {}
 
 	loadImage(): Promise<DiscardedCard> {
-		return new Promise((res, rej) => {
+		return this.loadImageWithSettings(false, 0.5)
+	}
+
+	destruct() {
+		this.image.destroy()
+	}
+
+	private loadImageWithSettings(
+		draggable: boolean,
+		scale: number
+	): Promise<DiscardedCard> {
+		return new Promise((res) => {
 			Image.fromURL(this.url, (img) => {
-				img.draggable(false)
-				img.scale({ x: 0.5, y: 0.5 })
+				img.draggable(draggable)
+				img.scale({ x: scale, y: scale })
 				img.position(this.position)
 				this.image = img
 				res(this)
 			})
 		})
-	}
-
-	destruct() {
-		this.image.destroy()
 	}
 }
 
@@ -142,76 +135,69 @@ export interface CardInHand extends MultipleListener, Hoverlightable {}
 
 export class CardInHand {
 	image: Image
-	url: string
-	position: Vector2d
-	hand: Hand
-	name: string
-
-	constructor(hand: Hand, name: string, url: string, position: Vector2d) {
-		this.url = url
-		this.position = position
-		this.hand = hand
-		this.name = name
-	}
+	constructor(
+		private hand: Hand,
+		public name: string,
+		private url: string,
+		private position: Vector2d
+	) {}
 
 	loadImage(): Promise<CardInHand> {
-		return new Promise((res, rej) => {
+		return this.loadImageWithSettings(
+			true,
+			0.5,
+			this.attachEvents.bind(this)
+		)
+	}
+
+	private attachEvents() {
+		const playHandler = () => {
+			if (!PlayArea.instance.isActive) return
+			PlayArea.instance.addPlaySequenceCard(this.name)
+		}
+
+		this.on('click', playHandler, this)
+		this.on('tap', playHandler, this)
+		this.on('dragend', this.handleDragEnd.bind(this), this)
+	}
+
+	private handleDragEnd(e: any) {
+		const endPos = e.target.position()
+		if (this.hand.wasPlayed(endPos) && !PlayArea.instance.isActive) {
+			PlayArea.instance.currentPlayed = this
+			PlayArea.instance.clearAll()
+			PlayArea.instance.isActive = true
+		} else {
+			if (PlayArea.instance.currentPlayed === this) {
+				PlayArea.instance.clearAll()
+				PlayArea.instance.isActive = false
+			}
+			this.image.position(this.position)
+		}
+	}
+
+	destruct() {
+		this.image.destroy()
+	}
+
+	private loadImageWithSettings(
+		draggable: boolean,
+		scale: number,
+		eventSetup: () => void
+	): Promise<CardInHand> {
+		return new Promise((res) => {
 			Image.fromURL(this.url, (img) => {
-				img.draggable(true)
-				img.scale({ x: 0.5, y: 0.5 })
+				img.draggable(draggable)
+				img.scale({ x: scale, y: scale })
 				img.position(this.position)
 				this.image = img
 				this.initMultipleListener(this.image, true)
 				this.setFiltersApplyable(this.image)
 				this.applyHoverLightEvent()
-				this.applyEvents()
+				eventSetup()
 				res(this)
 			})
 		})
-	}
-
-	applyEvents() {
-		this.on(
-			'click',
-			(e) => {
-				if (!PlayArea.instance.isActive) return
-				PlayArea.instance.addPlaySequenceCard(this.name)
-			},
-			this
-		)
-		this.on(
-			'tap',
-			(e) => {
-				if (!PlayArea.instance.isActive) return
-				PlayArea.instance.addPlaySequenceCard(this.name)
-			},
-			this
-		)
-		this.on(
-			'dragend',
-			(e) => {
-				const endPos = e.target.position()
-				if (
-					this.hand.wasPlayed(endPos) &&
-					!PlayArea.instance.isActive
-				) {
-					PlayArea.instance.currentPlayed = this
-					PlayArea.instance.clearAll()
-					PlayArea.instance.isActive = true
-				} else {
-					if (PlayArea.instance.currentPlayed === this) {
-						PlayArea.instance.clearAll()
-						PlayArea.instance.isActive = false
-					}
-					this.image.position(this.position)
-				}
-			},
-			this
-		)
-	}
-
-	destruct() {
-		this.image.destroy()
 	}
 }
 

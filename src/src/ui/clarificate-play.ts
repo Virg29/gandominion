@@ -14,19 +14,16 @@ export interface ClarificatePlayMenu extends MultipleListener, Hoverlightable {}
 
 export class ClarificatePlayMenu {
 	static instance: ClarificatePlayMenu
-
 	callback: (data: { Args: number[] }) => void = null
-
 	drawOn: Group
 	button: Image
-
 	cards: ClarificateCard[] = []
 	selectedCards: ClarificateSelectedCard[] = []
 
 	constructor(drawOn: Group) {
 		this.drawOn = drawOn
 		ClarificatePlayMenu.instance = this
-		this.drawButton()
+		this.initializeButton()
 	}
 
 	clarify(
@@ -37,213 +34,161 @@ export class ClarificatePlayMenu {
 		Table.showMessage(
 			`Played By ${
 				data.PlayedBy != null ? CardEnum[data.PlayedBy] : 'nothing'
-			} Card is ${CardEnum[data.PlayedCard]}`
+			}, Card is ${CardEnum[data.PlayedCard]}`
 		)
-		this.drawCards(data.Args)
+		this.renderCards(data.Args)
 	}
 
 	addToSelected(name: string) {
+		const position = {
+			x: PLAY_AREA_POS.x + this.selectedCards.length * 50,
+			y: PLAY_AREA_POS.y + 150,
+		}
 		this.selectedCards.push(
 			new ClarificateSelectedCard(
 				this.drawOn,
 				name,
 				getCardImageUrlByName(name),
-				{
-					x: PLAY_AREA_POS.x + this.selectedCards.length * 50,
-					y: PLAY_AREA_POS.y + 150,
-				}
+				position
 			)
 		)
 	}
 
 	clearFromSelected(name: string) {
-		const index = this.selectedCards.findIndex((card) => card.name == name)
-		const selectedCard = this.selectedCards[index]
-		this.selectedCards.splice(index, 1)
-		selectedCard.destruct()
+		const index = this.selectedCards.findIndex((card) => card.name === name)
+		if (index !== -1) {
+			this.selectedCards[index].destruct()
+			this.selectedCards.splice(index, 1)
+		}
 	}
 
 	clearAll() {
-		if (this.cards.length) {
-			this.cards.map((card) => card.destruct())
-			this.cards = []
-		}
-
-		if (this.selectedCards.length) {
-			this.selectedCards.map((card) => card.destruct())
-			this.selectedCards = []
-		}
-
+		this.cards.forEach((card) => card.destruct())
+		this.selectedCards.forEach((card) => card.destruct())
+		this.cards = []
+		this.selectedCards = []
 		this.callback = null
 	}
 
-	drawCards(cards: number[]) {
-		cards.map((card, index) => {
+	renderCards(cardIds: number[]) {
+		cardIds.forEach((id, index) => {
+			const position = {
+				x:
+					(PLAY_AREA_SIZE.x / cardIds.length) * index +
+					PLAY_AREA_POS.x +
+					10,
+				y: PLAY_AREA_POS.y + 20,
+			}
 			this.cards.push(
 				new ClarificateCard(
 					this.drawOn,
-					CardEnum[card],
-					getCardImageUrlByName(CardEnum[card]),
-					{
-						x:
-							(PLAY_AREA_SIZE.x / cards.length) * index +
-							PLAY_AREA_POS.x +
-							10,
-						y: PLAY_AREA_POS.y + 20,
-					}
+					CardEnum[id],
+					getCardImageUrlByName(CardEnum[id]),
+					position
 				)
 			)
 		})
 	}
 
-	drawButton() {
-		Image.fromURL(ClarifyPlayButtonImg, (img) => {
-			img.scale({ x: 0.2, y: 0.2 })
-			img.position({ x: 1600, y: 550 })
+	private initializeButton() {
+		this.createImage(
+			ClarifyPlayButtonImg,
+			{ x: 1600, y: 550 },
+			0.2,
+			(img) => {
+				this.button = img
+				this.applyImageEvents(this.button)
+			}
+		)
+	}
+
+	private createImage(
+		url: string,
+		position: Vector2d,
+		scale: number,
+		callback: (img: Image) => void
+	) {
+		Image.fromURL(url, (img) => {
+			img.scale({ x: scale, y: scale })
+			img.position(position)
 			this.drawOn.add(img)
-			this.button = img
-			this.initMultipleListener(this.button, true)
-			this.setFiltersApplyable(this.button)
-			this.applyHoverLightEvent()
-			this.applyClickEvents()
+			callback(img)
 		})
 	}
 
-	applyClickEvents() {
-		this.on(
-			'click',
-			() => {
-				const names = ClarificatePlayMenu.instance.selectedCards.map(
-					(card) => card.name
-				)
-				const types = names.map(
-					(name) =>
-						Object.keys(CardEnum)[
-							Object.values(CardEnum).indexOf(name)
-						]
-				)
-				ClarificatePlayMenu.instance.callback({
-					Args: types as unknown as number[],
-				})
-				ClarificatePlayMenu.instance.clearAll()
-			},
-			this
-		)
-		this.on(
-			'tap',
-			() => {
-				const names = ClarificatePlayMenu.instance.selectedCards.map(
-					(card) => card.name
-				)
-				const types = names.map(
-					(name) =>
-						Object.keys(CardEnum)[
-							Object.values(CardEnum).indexOf(name)
-						]
-				)
+	private applyImageEvents(image: Image) {
+		this.initMultipleListener(image, true)
+		this.setFiltersApplyable(image)
+		this.applyHoverLightEvent()
+		this.applyClickEvent(() => this.handleSelection())
+	}
 
-				ClarificatePlayMenu.instance.callback({
-					Args: types as unknown as number[],
-				})
-				ClarificatePlayMenu.instance.clearAll()
-			},
-			this
-		)
+	private applyClickEvent(handler: () => void) {
+		this.on('click', handler, this)
+		this.on('tap', handler, this)
+	}
+
+	private handleSelection() {
+		const names = this.selectedCards.map((card) => card.name)
+		const args = names.map((name) =>
+			Object.keys(CardEnum).indexOf(name)
+		) as unknown as number[]
+		this.callback({ Args: args })
+		this.clearAll()
 	}
 }
 
-export interface ClarificateCard extends MultipleListener, Hoverlightable {}
-export class ClarificateCard {
+interface ClarificateCardBase extends MultipleListener, Hoverlightable {}
+class ClarificateCardBase {
 	image: Image
 	name: string
 
-	constructor(drawOn: Group, name: string, url: string, position: Vector2d) {
+	constructor(
+		name: string,
+		drawOn: Group,
+		url: string,
+		position: Vector2d,
+		scale: number,
+		clickHandler: () => void
+	) {
 		this.name = name
-
 		Image.fromURL(url, (img) => {
-			img.scale({ x: 0.5, y: 0.5 })
+			img.scale({ x: scale, y: scale })
 			img.position(position)
 			drawOn.add(img)
 			this.image = img
 			this.initMultipleListener(this.image, true)
 			this.setFiltersApplyable(this.image)
 			this.applyHoverLightEvent()
-			this.applyClickEvents()
+			this.applyClickEvent(clickHandler)
 		})
 	}
 
-	applyClickEvents() {
-		this.on(
-			'click',
-			() => {
-				ClarificatePlayMenu.instance.addToSelected(this.name)
-			},
-			this
-		)
-		this.on(
-			'tap',
-			() => {
-				ClarificatePlayMenu.instance.addToSelected(this.name)
-			},
-			this
-		)
+	private applyClickEvent(handler: () => void) {
+		this.on('click', handler, this)
+		this.on('tap', handler, this)
 	}
 
 	destruct() {
-		try {
-			this.image.destroy()
-		} catch (e) {}
+		this.image?.destroy()
 	}
 }
 
-applyMixins(ClarificateCard, [MultipleListener, Hoverlightable])
+export class ClarificateCard extends ClarificateCardBase {
+	constructor(drawOn: Group, name: string, url: string, position: Vector2d) {
+		super(name, drawOn, url, position, 0.5, () =>
+			ClarificatePlayMenu.instance.addToSelected(name)
+		)
+	}
+}
+
+export class ClarificateSelectedCard extends ClarificateCardBase {
+	constructor(drawOn: Group, name: string, url: string, position: Vector2d) {
+		super(name, drawOn, url, position, 0.5, () =>
+			ClarificatePlayMenu.instance.clearFromSelected(name)
+		)
+	}
+}
 
 applyMixins(ClarificatePlayMenu, [MultipleListener, Hoverlightable])
-
-export interface ClarificateSelectedCard
-	extends MultipleListener,
-		Hoverlightable {}
-export class ClarificateSelectedCard {
-	image: Image
-	name: string
-
-	constructor(drawOn: Group, name: string, url: string, position: Vector2d) {
-		this.name = name
-
-		Image.fromURL(url, (img) => {
-			img.scale({ x: 0.5, y: 0.5 })
-			img.position(position)
-			drawOn.add(img)
-			this.image = img
-			this.initMultipleListener(this.image, true)
-			this.setFiltersApplyable(this.image)
-			this.applyHoverLightEvent()
-			this.applyClickEvents()
-		})
-	}
-
-	applyClickEvents() {
-		this.on(
-			'click',
-			() => {
-				ClarificatePlayMenu.instance.clearFromSelected(this.name)
-			},
-			this
-		)
-		this.on(
-			'tap',
-			() => {
-				ClarificatePlayMenu.instance.clearFromSelected(this.name)
-			},
-			this
-		)
-	}
-
-	destruct() {
-		try {
-			this.image.destroy()
-		} catch (e) {}
-	}
-}
-
-applyMixins(ClarificateSelectedCard, [MultipleListener, Hoverlightable])
+applyMixins(ClarificateCardBase, [MultipleListener, Hoverlightable])
