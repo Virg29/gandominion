@@ -137,9 +137,10 @@ export class ClarificatePlayMenu {
 
 	private handleSelection() {
 		const names = this.selectedCards.map((card) => card.name)
-		const args = names.map((name) =>
-			Object.keys(CardEnum).indexOf(name)
+		const args = names.map(
+			(name) => CardEnum[name as unknown as number]
 		) as unknown as number[]
+		console.log(args)
 		this.callback({ Args: args })
 		this.clearAll()
 	}
