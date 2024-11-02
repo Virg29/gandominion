@@ -1,91 +1,88 @@
-import DominionIOClient from '../dominion-library/connection-helper/client'
-import { Table } from '../dominion-library/entities/table'
-import { ClarificatePlayMenu } from './clarificate-play'
-import { PlayArea } from './play-area'
-import { Table as UiTable } from './table'
+import DominionIOClient from '../dominion-library/connection-helper/client';
+import { Table } from '../dominion-library/entities/table';
+import { ClarificatePlayMenu } from './clarificate-play';
+import { PlayArea } from './play-area';
+import { Table as UiTable } from './table';
 
 export default class GameManager {
-	static instance: GameManager
+  static instance: GameManager;
 
-	constructor() {
-		this.ioClient = new DominionIOClient((errorMsg) => {
-			UiTable.showMessage(errorMsg)
-		})
-		GameManager.instance = this
-	}
+  constructor() {
+    this.ioClient = new DominionIOClient((errorMsg) => {
+      UiTable.showMessage(errorMsg);
+    });
+    GameManager.instance = this;
+  }
 
-	ioClient: DominionIOClient
+  ioClient: DominionIOClient;
 
-	init(
-		address: string,
-		port: string,
-		name: string,
-		room: string,
-		players: number,
-		spectator: boolean
-	) {
-		this.ioClient.setUpConnection(
-			address,
-			port,
-			name,
-			room,
-			players,
-			spectator,
-			(data) => {
-				this.onTurn(data)
-			},
-			(data, cb) => {
-				this.onClarificate(data, cb)
-			},
-			(data: {
-				WinnerName: string
-				Players: {
-					Name: string
-					Plays: number
-					VictoryPoints: number
-				}[]
-			}) => {
-				UiTable.showMessage(`winner: ${data.WinnerName}`)
-			}
-		)
-	}
+  init(
+    address: string,
+    port: string,
+    name: string,
+    room: string,
+    players: number,
+    spectator: boolean,
+  ) {
+    this.ioClient.setUpConnection(
+      address,
+      port,
+      name,
+      room,
+      players,
+      spectator,
+      (data) => {
+        this.onTurn(data);
+      },
+      (data, cb) => {
+        console.log(data, cb);
+        this.onClarificate(data, cb);
+      },
+      (data: {
+        WinnerName: string;
+        Players: {
+          Name: string;
+          Plays: number;
+          VictoryPoints: number;
+        }[];
+      }) => {
+        UiTable.showMessage(`winner: ${data.WinnerName}`);
+      },
+    );
+  }
 
-	onClarificate(
-		data: { PlayedCard: number; PlayedBy: number | null; Args: number[] },
-		cb: (data: { Args: number[] }) => void
-	) {
-		ClarificatePlayMenu.instance.clarify(data, cb)
-	}
+  onClarificate(
+    data: { PlayedCard: number; PlayedBy: number | null; Args: { $values: number[] } },
+    cb: (data: { Args: number[] }) => void,
+  ) {
+    ClarificatePlayMenu.instance.clarify(data, cb);
+  }
 
-	onTurn(data: Table) {
-		UiTable.hand.updateHand(
-			data.me.hand.map((card) => ({ name: card.name })),
-			data.me.allCards.map((card) => ({
-				name: card.name,
-			}))
-		)
+  onTurn(data: Table) {
+    UiTable.hand.updateHand(
+      data.me.hand.map((card) => ({ name: card.name })),
+      data.me.allCards.map((card) => ({
+        name: card.name,
+      })),
+    );
 
-		UiTable.piles.updatePiles(
-			data.piles.map((pile) => ({
-				amount: pile.amount,
-				name: pile.card.name,
-			}))
-		)
+    UiTable.piles.updatePiles(
+      data.piles.map((pile) => ({
+        amount: pile.amount,
+        name: pile.card.name,
+      })),
+    );
 
-		PlayArea.instance.updateText(
-			data.me.turnActions,
-			data.me.turnBuys,
-			data.me.buyPotentia
-		)
+    PlayArea.instance.updateText(data.me.turnActions, data.me.turnBuys, data.me.buyPotentia);
 
-		UiTable.showMessage('Ur TURN!', 'info')
-	}
+    UiTable.showMessage('Ur TURN!', 'info');
+  }
 
-	buy(data: number[]) {
-		this.ioClient.buyCards({ args: data })
-	}
+  buy(data: number[]) {
+    this.ioClient.buyCards({ args: data });
+  }
 
-	play(playedCard: number, args: number[]) {
-		this.ioClient.playCard({ playedCard, args })
-	}
+  play(playedCard: number, args: number[]) {
+    this.ioClient.playCard({ playedCard, args });
+  }
 }
