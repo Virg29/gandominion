@@ -8,11 +8,13 @@ import { MultipleListener } from '../mixins/multiplelistener'
 import { Table } from './table'
 import { PlayArea } from './play-area'
 import {
+	DECK_SHIFT_Y,
+	DECK_SHIFT_X,
 	CARD_WIDTH_SIZE,
-	DISCARD_SHIFT,
-	DISCARD_START_POS,
+	DECK_START_POS,
 	HAND_AREA_POS,
 	HAND_AREA_SIZE,
+	DECK_COLUMN_MAX,
 } from './config'
 import { Circle } from 'konva/lib/shapes/Circle'
 
@@ -22,7 +24,7 @@ export default class Hand {
 	regionSize: Vector2d
 	startPos: Vector2d
 	cards: CardInHand[] = []
-	discard: DiscardedCard[] = []
+	deck: DeckCard[] = []
 	playOnMatPos: Vector2d
 	playOnMatSize: Vector2d
 
@@ -50,8 +52,8 @@ export default class Hand {
 		)
 	}
 
-	async updateHand(cards: { name: string }[], discard: { name: string }[]) {
-		this.clearHandAndDiscard()
+	async updateHand(cards: { name: string }[], myDeck: { name: string }[]) {
+		this.clearHandAndDeck()
 
 		const cardPositions = this.calculateCardPositions(cards.length)
 		const cardPromises = cards.map((card, index) =>
@@ -63,26 +65,28 @@ export default class Hand {
 			).loadImage()
 		)
 
-		const discardPositions = discard.map((_, index) => ({
-			x: DISCARD_START_POS.x,
-			y: DISCARD_START_POS.y + index * DISCARD_SHIFT,
+		const discardPositions = myDeck.map((_, index) => ({
+			x:
+				DECK_START_POS.x +
+				Math.floor(index / DECK_COLUMN_MAX) * DECK_SHIFT_X,
+			y: DECK_START_POS.y + (index % DECK_COLUMN_MAX) * DECK_SHIFT_Y,
 		}))
 
-		const discardPromises = discard.map((card, index) =>
-			new DiscardedCard(
+		const myDeckPromises = myDeck.map((card, index) =>
+			new DeckCard(
 				getCardImageUrlByName(card.name),
 				discardPositions[index]
 			).loadImage()
 		)
 
-		const [loadedCards, loadedDiscards] = await Promise.all([
+		const [loadedCards, loadedMyDeck] = await Promise.all([
 			Promise.all(cardPromises),
-			Promise.all(discardPromises),
+			Promise.all(myDeckPromises),
 		])
 		this.addCardsToGroup(loadedCards)
 		this.cards.push(...loadedCards)
-		this.addCardsToGroup(loadedDiscards)
-		this.discard.push(...loadedDiscards)
+		this.addCardsToGroup(loadedMyDeck)
+		this.deck.push(...loadedMyDeck)
 	}
 
 	private calculateCardPositions(cardCount: number): Vector2d[] {
@@ -97,23 +101,23 @@ export default class Hand {
 		}))
 	}
 
-	private addCardsToGroup(cards: (CardInHand | DiscardedCard)[]) {
+	private addCardsToGroup(cards: (CardInHand | DeckCard)[]) {
 		cards.forEach((card) => this.drawOn.add(card.image))
 	}
 
-	private clearHandAndDiscard() {
+	private clearHandAndDeck() {
 		this.cards.forEach((card) => card.destruct())
-		this.discard.forEach((card) => card.destruct())
+		this.deck.forEach((card) => card.destruct())
 		this.cards = []
-		this.discard = []
+		this.deck = []
 	}
 }
 
-export class DiscardedCard {
+export class DeckCard {
 	image: Image
 	constructor(private url: string, private position: Vector2d) {}
 
-	loadImage(): Promise<DiscardedCard> {
+	loadImage(): Promise<DeckCard> {
 		return this.loadImageWithSettings(false, 0.5)
 	}
 
@@ -124,7 +128,7 @@ export class DiscardedCard {
 	private loadImageWithSettings(
 		draggable: boolean,
 		scale: number
-	): Promise<DiscardedCard> {
+	): Promise<DeckCard> {
 		return new Promise((res) => {
 			Image.fromURL(this.url, (img) => {
 				img.draggable(draggable)

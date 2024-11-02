@@ -22,9 +22,11 @@ export const TURN_BUTTON_POS: Vector2d = { x: 1400, y: 50 }
 export const HAND_AREA_POS: Vector2d = { x: 50, y: 800 }
 export const HAND_AREA_SIZE: Vector2d = { x: 900, y: 0 }
 
-export const DISCARD_START_POS: Vector2d = { x: 1800, y: 10 }
+export const DECK_START_POS: Vector2d = { x: 1600, y: 10 }
+export const DECK_SHIFT_Y = 40
+export const DECK_SHIFT_X = 110
+export const DECK_COLUMN_MAX = 20
 export const CARD_WIDTH_SIZE = 110
-export const DISCARD_SHIFT = 50
 
 export const PILES_AREA_POS: Vector2d = { x: 10, y: 50 }
 export const PILES_AREA_SIZE: Vector2d = { x: 1100, y: 500 }
