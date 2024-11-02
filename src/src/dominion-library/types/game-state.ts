@@ -4,6 +4,7 @@ export interface State {
 	Kingdom: Kingdom
 	PlayerId: string
 	PlayerState: CurrentPlayerState
+	turn: number
 }
 
 export interface Player {
