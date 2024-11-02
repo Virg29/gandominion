@@ -127,11 +127,7 @@ export class Table {
 	initHand() {
 		const handGroupLayer = this.layerManager.getLayer('hand')
 		if ('add' in handGroupLayer) {
-			const hand = new Hand(
-				handGroupLayer,
-				{ x: 50, y: 800 },
-				{ x: 900, y: 0 }
-			)
+			const hand = new Hand(handGroupLayer)
 			hand.setPlayOnMatRegion(PLAY_AREA_POS, PLAY_AREA_SIZE)
 		}
 	}
@@ -163,8 +159,7 @@ export class Table {
 
 	initPiles() {
 		const tableDecksLayer = this.layerManager.getLayer('table-decks')
-		if ('add' in tableDecksLayer)
-			new Piles(tableDecksLayer, { x: 50, y: 50 }, { x: 1100, y: 500 })
+		if ('add' in tableDecksLayer) new Piles(tableDecksLayer)
 	}
 
 	drawBackground() {
@@ -186,7 +181,7 @@ export class Table {
 
 	drawPlayButton() {
 		const grpLayer = this.layerManager.getLayer('table-decks')
-		if ('add' in grpLayer) new PlayButton(grpLayer, { x: 1400, y: 550 })
+		if ('add' in grpLayer) new PlayButton(grpLayer)
 	}
 
 	applyDefaultScale() {
@@ -367,20 +362,6 @@ export class Table {
 			this
 		)
 	}
-	// applyDefaultOnDrag() {
-	// 	this.on(
-	// 		'dragmove',
-	// 		function (e: any) {
-	// 			// if (this.activeKeys.indexOf(this.key) == -1) {
-	// 			// 	this.stage.position(this.stagePos)
-	// 			// } else {
-	// 			this.stagePos = this.stage.position()
-	// 			// }
-	// 			//с зажатым пробелом
-	// 		},
-	// 		this
-	// 	)
-	// }
 }
 
 applyMixins(Table, [MultipleListener])

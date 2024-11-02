@@ -7,12 +7,17 @@ import { applyMixins } from '../common/utils/apply-mixins'
 import { MultipleListener } from '../mixins/multiplelistener'
 import { Table } from './table'
 import { PlayArea } from './play-area'
-
-const CARD_WIDTH_SIZE = 110
-const DISCARD_START_POS = { x: 1800, y: 10 }
-const DISCARD_SHIFT = 50
+import {
+	CARD_WIDTH_SIZE,
+	DISCARD_SHIFT,
+	DISCARD_START_POS,
+	HAND_AREA_POS,
+	HAND_AREA_SIZE,
+} from './config'
+import { Circle } from 'konva/lib/shapes/Circle'
 
 export default class Hand {
+	static instance: Hand
 	drawOn: Group
 	regionSize: Vector2d
 	startPos: Vector2d
@@ -21,11 +26,12 @@ export default class Hand {
 	playOnMatPos: Vector2d
 	playOnMatSize: Vector2d
 
-	constructor(drawOn: Group, startPos: Vector2d, size: Vector2d) {
+	constructor(drawOn: Group) {
+		Hand.instance = this
 		Table.hand = this
 		this.drawOn = drawOn
-		this.startPos = startPos
-		this.regionSize = size
+		this.startPos = HAND_AREA_POS
+		this.regionSize = HAND_AREA_SIZE
 	}
 
 	setPlayOnMatRegion(startPos: Vector2d, size: Vector2d) {
@@ -155,14 +161,18 @@ export class CardInHand {
 			if (!PlayArea.instance.isActive) return
 			PlayArea.instance.addPlaySequenceCard(this.name)
 		}
-
+		//for desktop and touchscreen devices
 		this.on('click', playHandler, this)
 		this.on('tap', playHandler, this)
+
 		this.on('dragend', this.handleDragEnd.bind(this), this)
 	}
 
-	private handleDragEnd(e: any) {
-		const endPos = e.target.position()
+	private handleDragEnd(e: Event & { target: Image }) {
+		let endPos: Vector2d = e.target.position()
+		endPos.x += e.target.width() / (2 / e.target.scaleX())
+		endPos.y += e.target.height() / (2 / e.target.scaleY())
+
 		if (this.hand.wasPlayed(endPos) && !PlayArea.instance.isActive) {
 			PlayArea.instance.currentPlayed = this
 			PlayArea.instance.clearAll()

@@ -7,6 +7,7 @@ import { MultipleListener } from '../mixins/multiplelistener'
 import Piles from './piles'
 
 import BuyButtonImg from '../../assets/img/bb.jpg'
+import { BUY_BUTTON_POS } from './config'
 
 export interface BuyButton extends MultipleListener, Hoverlightable {}
 export class BuyButton {
@@ -14,14 +15,14 @@ export class BuyButton {
 	name: string
 	piles: Piles
 
-	constructor(drawOn: Group, piles: Piles, position: Vector2d) {
+	constructor(drawOn: Group, piles: Piles) {
 		this.piles = piles
-		this.initializeImage(drawOn, position)
+		this.initializeImage(drawOn, BUY_BUTTON_POS)
 	}
 
 	private initializeImage(drawOn: Group, position: Vector2d) {
 		Image.fromURL(BuyButtonImg, (img) => {
-			img.scale({ x: 0.3, y: 0.3 })
+			img.scale({ x: 0.32, y: 0.32 })
 			img.position(position)
 			drawOn.add(img)
 			this.image = img

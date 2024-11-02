@@ -12,10 +12,13 @@ import { CardEnum } from '../dominion-library/entities/card'
 import GameManager from './game-manager'
 import { PlayArea } from './play-area'
 import {
+	PILES_AREA_POS,
+	PILES_AREA_SIZE,
 	PILES_DRAW_CONFIG,
 	PREBUY_STORAGE_POS,
 	PREBUY_STORAGE_SHIFT,
 } from './config'
+import Konva from 'konva'
 
 export default class Piles {
 	drawOn: Group
@@ -25,12 +28,12 @@ export default class Piles {
 	preBuyCards: PreBuyCard[] = []
 	buyButton: BuyButton
 
-	constructor(drawOn: Group, startPos: Vector2d, size: Vector2d) {
+	constructor(drawOn: Group) {
 		Table.piles = this
 		this.drawOn = drawOn
-		this.startPos = startPos
-		this.regionSize = size
-		this.buyButton = new BuyButton(drawOn, this, { x: 1180, y: 550 })
+		this.startPos = PILES_AREA_POS
+		this.regionSize = PILES_AREA_SIZE
+		this.buyButton = new BuyButton(drawOn, this)
 	}
 
 	buyAll() {
@@ -136,8 +139,10 @@ export class PreBuyCard {
 
 	private loadImage(drawOn: Group, url: string, position: Vector2d) {
 		Image.fromURL(url, (img) => {
-			img.scale({ x: 0.5, y: 0.5 })
+			img.scale({ x: 0.6, y: 0.6 })
 			img.position(position)
+			img.cache()
+			img.filters([Konva.Filters.Grayscale])
 			drawOn.add(img)
 			this.image = img
 			this.initMultipleListener(this.image, true)

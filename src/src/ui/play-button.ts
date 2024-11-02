@@ -9,14 +9,15 @@ import BuyButtonImg from '../../assets/img/pb.jpg'
 import { CardEnum } from '../dominion-library/entities/card'
 import GameManager from './game-manager'
 import { PlayArea } from './play-area'
+import { PLAY_BUTTON_POS } from './config'
 
 export interface PlayButton extends MultipleListener, Hoverlightable {}
 
 export class PlayButton {
 	image: Image
 
-	constructor(drawOn: Group, position: Vector2d) {
-		this.initializeImage(drawOn, position)
+	constructor(drawOn: Group) {
+		this.initializeImage(drawOn, PLAY_BUTTON_POS)
 	}
 
 	private initializeImage(drawOn: Group, position: Vector2d) {

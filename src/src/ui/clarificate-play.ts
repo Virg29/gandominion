@@ -8,7 +8,7 @@ import { Group } from 'konva/lib/Group'
 import { Vector2d } from 'konva/lib/types'
 import { CardEnum } from '../dominion-library/entities/card'
 import { getCardImageUrlByName } from './cards-images'
-import { PLAY_AREA_POS, PLAY_AREA_SIZE } from './config'
+import { CLARIFIY_BUTTON_POS, PLAY_AREA_POS, PLAY_AREA_SIZE } from './config'
 
 export interface ClarificatePlayMenu extends MultipleListener, Hoverlightable {}
 
@@ -100,8 +100,8 @@ export class ClarificatePlayMenu {
 	private initializeButton() {
 		this.createImage(
 			ClarifyPlayButtonImg,
-			{ x: 1600, y: 550 },
-			0.2,
+			CLARIFIY_BUTTON_POS,
+			0.21,
 			(img) => {
 				this.button = img
 				this.applyImageEvents(this.button)
