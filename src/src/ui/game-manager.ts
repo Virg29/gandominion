@@ -37,6 +37,9 @@ export default class GameManager {
 			(data) => {
 				this.onTurn(data)
 			},
+			(data) => {
+				this.updateState(data)
+			},
 			(data, cb) => {
 				console.log(data, cb)
 				this.onClarificate(data, cb)
@@ -63,6 +66,28 @@ export default class GameManager {
 		cb: (data: { Args: number[] }) => void
 	) {
 		ClarificatePlayMenu.instance.clarify(data, cb)
+	}
+
+	updateState(data: Table) {
+		UiTable.hand.updateHand(
+			data.me.hand.map((card) => ({ name: card.name })),
+			data.me.allCards.map((card) => ({
+				name: card.name,
+			}))
+		)
+
+		UiTable.piles.updatePiles(
+			data.piles.map((pile) => ({
+				amount: pile.amount,
+				name: pile.card.name,
+			}))
+		)
+
+		PlayArea.instance.updateText(
+			data.me.turnActions,
+			data.me.turnBuys,
+			data.me.buyPotentia
+		)
 	}
 
 	onTurn(data: Table) {
