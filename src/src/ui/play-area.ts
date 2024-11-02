@@ -1,99 +1,39 @@
 import { Group } from 'konva/lib/Group'
 import { Rect } from 'konva/lib/shapes/Rect'
-import { PLAY_AREA_POS, PLAY_AREA_SIZE, Table } from './table'
-
 import { Image } from 'konva/lib/shapes/Image'
 import { Vector2d } from 'konva/lib/types'
+import { Text } from 'konva/lib/shapes/Text'
 import { applyMixins } from '../common/utils/apply-mixins'
 import { Hoverlightable } from '../mixins/hoverlight'
 import { MultipleListener } from '../mixins/multiplelistener'
 import { CardInHand } from './hand'
 import { getCardImageUrlByName } from './cards-images'
-import { Text } from 'konva/lib/shapes/Text'
-
-const PREACTION_STORAGE_POS = {
-	x: 900,
-	y: 700,
-}
-
-const PREACTION_STORAGE_SHIFT = 50
+import {
+	PLAY_AREA_POS,
+	PLAY_AREA_SIZE,
+	PREACTION_STORAGE_POS,
+	PREACTION_STORAGE_SHIFT,
+} from './config'
 
 export class PlayArea {
 	static instance: PlayArea
-	remaningActionsText: Text
-	remaningBuysText: Text
-	totalMoneyText: Text
-
-	isActive: boolean = false
+	isActive = false
 	drawOn: Group
 	currentPlayed: CardInHand
 	playSequenceCards: PreActionCard[] = []
 
-	updateText(actions: number, buys: number, money: number) {
-		if (!this.remaningActionsText) {
-			this.remaningActionsText = new Text({
-				fill: '#ffffff',
-				fontSize: 30,
-				x: PLAY_AREA_POS.x + 10,
-				y: PLAY_AREA_POS.y + 10,
-			})
-			this.drawOn.add(this.remaningActionsText)
-		}
-		if (!this.remaningBuysText) {
-			this.remaningBuysText = new Text({
-				fill: '#ffffff',
-				fontSize: 30,
-				x: PLAY_AREA_POS.x + 10,
-				y: PLAY_AREA_POS.y + 50,
-			})
-			this.drawOn.add(this.remaningBuysText)
-		}
-		if (!this.totalMoneyText) {
-			this.totalMoneyText = new Text({
-				fill: '#ffffff',
-				fontSize: 30,
-				x: PLAY_AREA_POS.x + 10,
-				y: PLAY_AREA_POS.y + 90,
-			})
-			this.drawOn.add(this.totalMoneyText)
-		}
-
-		this.remaningActionsText.text(`Rem.Acts.:${String(actions)}`)
-		this.remaningBuysText.text(`Rem.Buys:${String(buys)}`)
-		this.totalMoneyText.text(`Money:${String(money)}`)
-	}
-
-	addPlaySequenceCard(name: string) {
-		this.playSequenceCards.push(
-			new PreActionCard(this.drawOn, name, getCardImageUrlByName(name), {
-				x:
-					PREACTION_STORAGE_POS.x +
-					this.playSequenceCards.length * PREACTION_STORAGE_SHIFT,
-				y: PREACTION_STORAGE_POS.y,
-			})
-		)
-	}
-
-	clearFromPlaySequence(name: string) {
-		const index = this.playSequenceCards.findIndex(
-			(card) => card.name == name
-		)
-		const preActionCard = this.playSequenceCards[index]
-		this.playSequenceCards.splice(index, 1)
-		preActionCard.destruct()
-	}
-
-	clearAll() {
-		if (this.playSequenceCards.length)
-			this.playSequenceCards.forEach((card) => card.destruct())
-		this.playSequenceCards = []
-	}
+	private remaningActionsText: Text
+	private remaningBuysText: Text
+	private totalMoneyText: Text
 
 	constructor(drawOn: Group) {
 		PlayArea.instance = this
-
 		this.drawOn = drawOn
+		this.initializePlayArea()
+		this.initializeTextDisplays()
+	}
 
+	private initializePlayArea() {
 		this.drawOn.add(
 			new Rect({
 				...PLAY_AREA_POS,
@@ -105,6 +45,60 @@ export class PlayArea {
 			})
 		)
 	}
+
+	private initializeTextDisplays() {
+		this.remaningActionsText = this.createTextDisplay(10)
+		this.remaningBuysText = this.createTextDisplay(50)
+		this.totalMoneyText = this.createTextDisplay(90)
+	}
+
+	private createTextDisplay(offsetY: number): Text {
+		const text = new Text({
+			fill: '#ffffff',
+			fontSize: 30,
+			x: PLAY_AREA_POS.x + 10,
+			y: PLAY_AREA_POS.y + offsetY,
+		})
+		this.drawOn.add(text)
+		return text
+	}
+
+	updateText(actions: number, buys: number, money: number) {
+		this.remaningActionsText.text(`Rem.Acts.:${actions}`)
+		this.remaningBuysText.text(`Rem.Buys:${buys}`)
+		this.totalMoneyText.text(`Money:${money}`)
+	}
+
+	addPlaySequenceCard(name: string) {
+		const position = {
+			x:
+				PREACTION_STORAGE_POS.x +
+				this.playSequenceCards.length * PREACTION_STORAGE_SHIFT,
+			y: PREACTION_STORAGE_POS.y,
+		}
+		const newCard = new PreActionCard(
+			this.drawOn,
+			name,
+			getCardImageUrlByName(name),
+			position
+		)
+		this.playSequenceCards.push(newCard)
+	}
+
+	clearFromPlaySequence(name: string) {
+		const index = this.playSequenceCards.findIndex(
+			(card) => card.name === name
+		)
+		if (index !== -1) {
+			this.playSequenceCards[index].destruct()
+			this.playSequenceCards.splice(index, 1)
+		}
+	}
+
+	clearAll() {
+		this.playSequenceCards.forEach((card) => card.destruct())
+		this.playSequenceCards = []
+	}
 }
 
 export interface PreActionCard extends MultipleListener, Hoverlightable {}
@@ -114,7 +108,10 @@ export class PreActionCard {
 
 	constructor(drawOn: Group, name: string, url: string, position: Vector2d) {
 		this.name = name
+		this.initializeImage(drawOn, url, position)
+	}
 
+	private initializeImage(drawOn: Group, url: string, position: Vector2d) {
 		Image.fromURL(url, (img) => {
 			img.scale({ x: 0.5, y: 0.5 })
 			img.position(position)
@@ -127,27 +124,15 @@ export class PreActionCard {
 		})
 	}
 
-	applyClickEvents() {
-		this.on(
-			'click',
-			() => {
-				PlayArea.instance.clearFromPlaySequence(this.name)
-			},
-			this
-		)
-		this.on(
-			'tap',
-			() => {
-				PlayArea.instance.clearFromPlaySequence(this.name)
-			},
-			this
-		)
+	private applyClickEvents() {
+		const clearCard = () =>
+			PlayArea.instance.clearFromPlaySequence(this.name)
+		this.on('click', clearCard, this)
+		this.on('tap', clearCard, this)
 	}
 
 	destruct() {
-		try {
-			this.image.destroy()
-		} catch (e) {}
+		this.image?.destroy()
 	}
 }
 

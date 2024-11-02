@@ -3,23 +3,19 @@ import Konva from 'konva'
 import { Stage } from 'konva/lib/Stage'
 import { Vector2d } from 'konva/lib/types'
 import * as webix from 'webix'
+import img from '../../assets/img/bg.jpg'
 import { applyMixins } from '../common/utils/apply-mixins'
 import { MultipleListener } from '../mixins/multiplelistener'
-import LayerManager from './layermanager'
-import { Image } from 'konva/lib/shapes/Image'
-import img from '../../assets/img/bg.jpg'
-import Piles from './piles'
-import { Rect } from 'konva/lib/shapes/Rect'
-import Hand from './hand'
-import GameManager from './game-manager'
-import { PlayButton } from './play-button'
-import { PlayArea } from './play-area'
 import { ClarificatePlayMenu } from './clarificate-play'
+import { PLAY_AREA_POS, PLAY_AREA_SIZE } from './config'
+import GameManager from './game-manager'
+import Hand from './hand'
+import LayerManager from './layermanager'
+import Piles from './piles'
+import { PlayArea } from './play-area'
+import { PlayButton } from './play-button'
 
 Konva.pixelRatio = 1
-
-export const PLAY_AREA_POS = { x: 50, y: 550 }
-export const PLAY_AREA_SIZE = { x: 1100, y: 200 }
 
 export interface Table extends MultipleListener {}
 
