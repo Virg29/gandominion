@@ -75,6 +75,7 @@ export default class GameManager {
 
     PlayArea.instance.updateText(data.me.turnActions, data.me.turnBuys, data.me.buyPotentia);
 
+    UiTable.instance.updateTurnCounter(data.turn);
     UiTable.showMessage('Ur TURN!', 'info');
   }
 
