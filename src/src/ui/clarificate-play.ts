@@ -53,7 +53,6 @@ export class ClarificatePlayMenu {
 		},
 		cb: (data: { Args: number[] }) => void
 	) {
-		this.enable()
 		this.callback = cb
 		Table.showMessage(
 			`Played By ${

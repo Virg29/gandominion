@@ -65,6 +65,10 @@ export default class GameManager {
 		},
 		cb: (data: { Args: number[] }) => void
 	) {
+		Hand.instance.disable()
+		PlayButton.instance.disable()
+		BuyButton.instance.disable()
+		ClarificatePlayMenu.instance.enable()
 		ClarificatePlayMenu.instance.clarify(data, cb)
 	}
 
