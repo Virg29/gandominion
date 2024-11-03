@@ -1,5 +1,5 @@
 
-# Gandominium
+# Gandominion
 
 A web-based GUI for the Dominion game server. This application provides an interactive interface for managing and playing Dominion games online, built with [Konva.js](https://konvajs.org/) for canvas rendering, using TypeScript. It is bundled with Webpack and leverages a modern stack for a responsive, efficient gameplay experience.
 
