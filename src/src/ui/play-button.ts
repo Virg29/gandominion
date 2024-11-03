@@ -29,6 +29,7 @@ export class PlayButton {
 	disable() {
 		this.disabled = true
 		this.image.filters([...this.image.filters(), Konva.Filters.Grayscale])
+		this.disableHoverlighting()
 	}
 
 	enable() {
@@ -38,6 +39,7 @@ export class PlayButton {
 				.filters()
 				.filter((filter) => filter !== Konva.Filters.Grayscale),
 		])
+		this.enableHoverlighting()
 	}
 
 	private initializeImage(drawOn: Group, position: Vector2d) {
@@ -47,8 +49,9 @@ export class PlayButton {
 			drawOn.add(img)
 			this.image = img
 			this.initMultipleListener(this.image, true)
-			this.setFiltersApplyable(this.image)
+			this.setFiltersApplyable(this.image, null, true)
 			this.applyHoverLightEvent()
+			this.enableHoverlighting()
 			this.applyClickEvents()
 			this.image.cache()
 			this.image.filters(this.image.filters() ?? [])

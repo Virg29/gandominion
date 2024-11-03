@@ -32,6 +32,7 @@ export class ClarificatePlayMenu {
 	disable() {
 		this.disabled = true
 		this.button.filters([...this.button.filters(), Konva.Filters.Grayscale])
+		this.disableHoverlighting()
 	}
 
 	enable() {
@@ -41,6 +42,7 @@ export class ClarificatePlayMenu {
 				.filters()
 				.filter((filter) => filter !== Konva.Filters.Grayscale),
 		])
+		this.enableHoverlighting()
 	}
 
 	clarify(
@@ -144,8 +146,9 @@ export class ClarificatePlayMenu {
 
 	private applyImageEvents(image: Image) {
 		this.initMultipleListener(image, true)
-		this.setFiltersApplyable(image)
+		this.setFiltersApplyable(image, null, true)
 		this.applyHoverLightEvent()
+		this.enableHoverlighting()
 		this.applyClickEvent(() => this.handleSelection())
 	}
 

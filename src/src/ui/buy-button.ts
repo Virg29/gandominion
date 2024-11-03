@@ -29,6 +29,7 @@ export class BuyButton {
 	disable() {
 		this.disabled = true
 		this.image.filters([...this.image.filters(), Konva.Filters.Grayscale])
+		this.disableHoverlighting()
 	}
 
 	enable() {
@@ -38,6 +39,7 @@ export class BuyButton {
 				.filters()
 				.filter((filter) => filter !== Konva.Filters.Grayscale),
 		])
+		this.enableHoverlighting()
 	}
 
 	private initializeImage(drawOn: Group, position: Vector2d) {
@@ -47,6 +49,7 @@ export class BuyButton {
 			drawOn.add(img)
 			this.image = img
 			this.setupImageEvents()
+			this.enableHoverlighting()
 			this.image.filters(this.image.filters() ?? [])
 			this.image.cache()
 			this.enable()
@@ -55,7 +58,7 @@ export class BuyButton {
 
 	private setupImageEvents() {
 		this.initMultipleListener(this.image, true)
-		this.setFiltersApplyable(this.image)
+		this.setFiltersApplyable(this.image, null, true)
 		this.applyHoverLightEvent()
 		this.applyClickEvents()
 	}
