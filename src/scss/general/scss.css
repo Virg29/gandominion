@@ -6004,18 +6004,6 @@ body.webix_print {
   float: right;
   margin: 4px -5px 0 12px;
 }
-@font-face {
-  font-family: Roboto;
-  src: url('fonts/Roboto-Regular-webfont.woff2') format('woff2'), url('fonts/Roboto-Regular-webfont.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
-}
-@font-face {
-  font-family: Roboto;
-  src: url('fonts/Roboto-Medium-webfont.woff2') format('woff2'), url('fonts/Roboto-Medium-webfont.woff') format('woff');
-  font-style: normal;
-  font-weight: 500;
-}
 .mainFont {
   font-family: Roboto, sans-serif;
   font-size: 14px;
@@ -8282,20 +8270,6 @@ textarea.webix_invalid {
 .webix_skin_mark {
   height: 240px;
 }
-/* based on MaterialDesignIcons.com */
-@font-face {
-  font-family: "Webix Material Icons";
-  src: url('fonts/webixmdi-webfont.woff2') format('woff2'), url('fonts/webixmdi-webfont.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
-}
-/* based on FontAwesome */
-@font-face {
-  font-family: 'Webix Awesome Icons';
-  src: url('fonts/webixfa-webfont.woff2') format('woff2'), url('fonts/webixfa-webfont.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
-}
 /* icons collection common for above fonts*/
 .wxi-angle-down:before {
   content: "\F001";
@@ -8483,4 +8457,9 @@ textarea.webix_invalid {
     -webkit-transform: rotate(359deg);
     transform: rotate(359deg);
   }
+}
+
+@font-face {
+    font-family: 'PublicPixelFont';
+    src: url("../public-pixel-font/PublicPixel-rv0pA.ttf") format("truetype");
 }

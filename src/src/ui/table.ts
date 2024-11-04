@@ -138,28 +138,7 @@ export class Table {
 	}
 
 	updateTurnCounter(turn: number) {
-		const grpLayer = this.layerManager.getLayer('table-decks')
-
-		const rect = new Rect({
-			...TURN_BUTTON_POS,
-			width: 100,
-			height: 100,
-			fill: 'red',
-		})
-
-		const text = new Konva.Text({
-			x: TURN_BUTTON_POS.x + 10,
-			y: TURN_BUTTON_POS.y + 10,
-			text: `Turn: ${turn}`,
-			fontSize: 20,
-			fontFamily: 'Calibri',
-			fill: 'white',
-		})
-
-		if ('add' in grpLayer) {
-			grpLayer.add(rect)
-			grpLayer.add(text)
-		}
+		PlayArea.instance.updateTurn(turn)
 	}
 
 	initPiles() {

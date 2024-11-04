@@ -25,6 +25,7 @@ export class PlayArea {
 	private remaningActionsText: Text
 	private remaningBuysText: Text
 	private totalMoneyText: Text
+	private turnText: Text
 
 	constructor(drawOn: Group) {
 		PlayArea.instance = this
@@ -47,20 +48,34 @@ export class PlayArea {
 	}
 
 	private initializeTextDisplays() {
-		this.remaningActionsText = this.createTextDisplay(10)
-		this.remaningBuysText = this.createTextDisplay(50)
-		this.totalMoneyText = this.createTextDisplay(90)
+		this.remaningActionsText = this.createTextDisplay({ offsetY: 10 })
+		this.remaningBuysText = this.createTextDisplay({ offsetY: 50 })
+		this.totalMoneyText = this.createTextDisplay({ offsetY: 90 })
+		this.turnText = this.createTextDisplay({
+			offsetX: 700,
+			offsetY: 95,
+			size: 50,
+		})
 	}
 
-	private createTextDisplay(offsetY: number): Text {
+	private createTextDisplay(data: {
+		offsetX?: number
+		offsetY?: number
+		size?: number
+	}): Text {
 		const text = new Text({
 			fill: '#ffffff',
-			fontSize: 30,
-			x: PLAY_AREA_POS.x + 10,
-			y: PLAY_AREA_POS.y + offsetY,
+			fontFamily: 'PublicPixelFont',
+			fontSize: data.size ?? 25,
+			x: PLAY_AREA_POS.x + (data.offsetX ?? 10),
+			y: PLAY_AREA_POS.y + (data.offsetY ?? 0),
 		})
 		this.drawOn.add(text)
 		return text
+	}
+
+	updateTurn(turn: number) {
+		this.turnText.text(`Turn: ${turn}`)
 	}
 
 	updateText(actions: number, buys: number, money: number) {

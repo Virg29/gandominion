@@ -1,4 +1,3 @@
-import '../../scss/general/mdi-scss/materialdesignicons.scss'
 import '../../scss/general/scss.css'
 import * as $ from 'jquery'
 
