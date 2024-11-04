@@ -139,6 +139,9 @@ export default class GameManager {
 	}
 
 	play(playedCard: number, args: number[]) {
+		Hand.instance.disable()
+		PlayButton.instance.disable()
+		BuyButton.instance.disable()
 		this.ioClient.playCard({ playedCard, args })
 	}
 }
