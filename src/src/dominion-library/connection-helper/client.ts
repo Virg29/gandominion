@@ -93,7 +93,7 @@ export default class DominionIOClient {
 				WinnerName: string
 				Players: {
 					Name: string
-					Plays: number
+					Place: number
 					VictoryPoints: number
 				}[]
 			}) => {

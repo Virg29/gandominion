@@ -48,11 +48,18 @@ export default class GameManager {
 				WinnerName: string
 				Players: {
 					Name: string
-					Plays: number
+					Place: number
 					VictoryPoints: number
 				}[]
 			}) => {
-				UiTable.showMessage(`winner: ${data.WinnerName}`)
+				UiTable.showMessage(`winner: ${data.WinnerName}`, 'info')
+
+				for (const player of data.Players) {
+					UiTable.showMessage(
+						`${player.Name} - ${player.VictoryPoints}`,
+						'info'
+					)
+				}
 			}
 		)
 	}
